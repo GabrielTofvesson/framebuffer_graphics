@@ -19,6 +19,13 @@ So... I made a bitmap format for creating characters because I can't be bothered
 
 Oh right, the bitmap format uses the `.bm` extension. If there are any issues, `bitmap.c` natively supports both the compressed and human-readable formats, so there's an upshot, I guess.
 
+I forgot to add this before I commited: `res/maps.meta` describes all available characters and their corresponding bitmap files. Once again, I was lazy, so the format is as follows:
+1. Each line describes a character mapping
+2. The first character of each line describes which character is being mapped
+3. The rest of the line describes the file path (relative to the directory containing the `meta.maps` file) of the character bitmap file
+
+If you want to get the bitmap of a given character, just look at the main function in `src/draw.c` for a reference. I can't be bothered to explain it here. Sorry.
+
 ## Why??
 I don't know. I just want to sleep
 
