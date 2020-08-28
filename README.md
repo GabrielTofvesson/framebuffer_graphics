@@ -38,10 +38,10 @@ I don't know. I just want to sleep
 
 ## TODO
 * Obviously fix the language in this README. This is waaaaaaay too informal
-* Take a nap
+* ~~Take a nap~~
 * Proper bounds-detection for things being drawn (instead of just crashing or wrapping)
 * Check for memory leaks
-* Scale-able characters
+* ~~Scale-able characters~~
 * More characters
 * Full-colour characters
 * Input events system
