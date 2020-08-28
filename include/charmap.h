@@ -24,6 +24,6 @@ void charmap_unload (struct charmap map);
 struct charmap_meta charmap_load_all (const char *root, const char *meta);
 void charmap_unload_all (struct charmap_meta meta);
 
-const struct charmap * charmap_find (struct charmap_meta meta, char mapping);
+struct charmap * charmap_find (struct charmap_meta meta, char mapping);
 
 #endif

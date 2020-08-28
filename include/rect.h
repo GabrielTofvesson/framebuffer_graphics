@@ -33,7 +33,8 @@
 //  int _h = RECT_HEIGHT((r));\
 //  RECT_ALIGN_TL((r), (_x) - (_w / 2), (_y) - (_h / 2));\
 //}
-#define RECT_CENTER(r, _x, _y) RECT_ALIGN_TL((r), (_x) - (RECT_WIDTH((r)) / 2), (_y) - (RECT_HEIGHT((r)) / 2))
+#define RECT_CENTER(r, _x, _y, scl) RECT_ALIGN_TL((r), (_x) - (int)(RECT_WIDTH(r) * scl / 2.0f), (_y) - (int)(RECT_HEIGHT(r) * scl / 2.0f))
+//#define RECT_CENTER(r, _x, _y) RECT_ALIGN_TL((r), (_x) - (RECT_WIDTH((r)) / 2), (_y) - (RECT_HEIGHT((r)) / 2))
 #define RECT_STRETCH(r, _x, _y) {\
   (r).br.x += (_x);\
   (r).tl.x -= (_x);\

@@ -18,7 +18,8 @@ struct bitmap bitmap_load_readable (const char *path) {
   struct bitmap result = {
     NULL,
     0,
-    0
+    0,
+    NULL
   };
   int fd = open (path, O_RDONLY);
 
@@ -59,7 +60,8 @@ struct bitmap bitmap_load_raw (const char *path) {
   struct bitmap result = {
     NULL,
     0,
-    0
+    0,
+    NULL
   };
   int fd = open (path, O_RDONLY);
 
@@ -102,7 +104,8 @@ struct bitmap bitmap_parse_readable (const char *data, int width, int height) {
   struct bitmap result = {
     NULL,
     0,
-    0
+    0,
+    NULL
   };
 
   int len = (width + 1) * height;
@@ -199,4 +202,44 @@ void bitmap_write_bit (struct bitmap bitmap, size_t x, size_t y, char bit) {
 
 void bitmap_discard (struct bitmap bitmap) {
   free (bitmap.data);
+  bitmap.data = NULL;
+
+  if (bitmap.cache) {
+    blitmap_discard (*bitmap.cache);
+    free (bitmap.cache);
+    bitmap.cache = NULL;
+  }
+}
+
+void bitmap_load_blitmap (struct bitmap *bitmap, int bpp) {
+  // Check if an existing blit-map can be reused
+  if (bitmap->cache) {
+    if (bitmap->cache->bpp == bpp)
+      return;
+
+    // Discard old cached blit map an generate a new one
+    blitmap_discard (*bitmap->cache);
+  }
+
+  bitmap->cache = malloc (sizeof (struct blitmap));
+  bitmap->cache->data = malloc (bitmap->width * bitmap->height * bpp);
+  bitmap->cache->bpp = bpp;
+
+  for (int y = 0; y < bitmap->height; ++y)
+    for (int x = 0; x < bitmap->width; ++x)
+      memset (
+          bitmap->cache->data + (x + y * bitmap->width) * bpp,
+          bitmap_read_bit(*bitmap, x, y) ? 0x00 : 0xFF,
+          bpp
+      );
+}
+
+void blitmap_discard (struct blitmap blitmap) {
+  free (blitmap.data);
+  blitmap.data = NULL;
+}
+
+struct rect bitmap_to_rect (const struct bitmap bitmap, float scale) {
+  struct rect result = RECT((int)(bitmap.width * scale), (int)(bitmap.height * scale));
+  return result;
 }

@@ -121,7 +121,7 @@ struct charmap_meta charmap_load_all (const char *root, const char *meta_file) {
   return meta;
 }
 
-const struct charmap * charmap_find (struct charmap_meta meta, char mapping) {
+struct charmap * charmap_find (struct charmap_meta meta, char mapping) {
   if ((meta.mapped[mapping >> 3] >> (mapping & 7)) & 1) {
     for (int i = 0; i < meta.map_count; ++i)
       if (meta.maps[i].c == mapping)

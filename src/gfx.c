@@ -1,3 +1,5 @@
+// TODO: Implement dirty regions and selective buffer-to-buffer transfers
+
 #include "gfx.h"
 
 #include <string.h>
@@ -14,6 +16,49 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Fixed byte-per-pixel blit template implementations
+#define BLIT_F(type) \
+  void fblit_ ## type (type *pixelBuf, size_t width, struct point start, struct bitmap *content, type color, float scale) { \
+    bitmap_load_blitmap (content, sizeof (type));\
+    \
+    struct point end = {\
+      (int)(content->width * scale),\
+      (int)(content->height * scale)\
+    };\
+    \
+    type *cache = content->cache->data;\
+    float inc = 1.0f / scale;\
+    for (int y = 0; y < end.y; ++y)\
+      for (int x = 0; x < end.x; ++x) {\
+        type value = cache[(int)(x * inc) + ((int)(y * inc) * content->width)];\
+        pixelBuf[(start.x + x) + (start.y + y) * width] &= value;\
+        pixelBuf[(start.x + x) + (start.y + y) * width] |= color & ~value;\
+      }\
+  }
+
+#define BLIT_N(type) \
+  void iblit_ ## type (type *pixelBuf, size_t width, struct point start, struct bitmap *content, type color) { \
+    bitmap_load_blitmap (content, sizeof (type));\
+    \
+    struct point end = {\
+      start.x + content->width,\
+      start.y + content->height\
+    };\
+    \
+    type *cache = content->cache->data;\
+    for (int y = start.y; y < end.y; ++y)\
+      for (int x = start.x; x < end.x; ++x) {\
+        pixelBuf[x + y * width] &= *cache;\
+        pixelBuf[x + y * width] |= color & ~*cache;\
+        ++cache;\
+      }\
+  }
+
+#define BLIT(type) \
+  BLIT_F(type)\
+  BLIT_N(type)
+
+
 int to_index (int x, int y, struct screen_dims dims) {
   return (x * dims.bpp) + (y * dims.width * dims.bpp);
 }
@@ -21,6 +66,13 @@ int to_index (int x, int y, struct screen_dims dims) {
 void draw_pixel (void *pixelBuf, int pixel, int bpp) {
   memcpy (pixelBuf, &pixel, bpp);
 }
+
+
+// Quick blit implementations
+BLIT(uint8_t)
+BLIT(uint16_t)
+BLIT(uint32_t)
+BLIT(uint64_t)
 
 void draw_rect (struct screen screen, struct rect rect, int color) {
   for (int y = rect.tl.y; y < rect.br.y; ++y)
@@ -34,7 +86,6 @@ void draw_rect_b (struct screen screen, struct rect rect, int color) {
 }
 
 void draw_bitmap (struct screen screen, struct bitmap bitmap, struct point tl, int color, bool transparent_bg) {
-
   for (int y = 0; y < bitmap.height; ++y)
     for (int x = 0; x < bitmap.width; ++x) {
       char bit = bitmap_read_bit (bitmap, x, y);
